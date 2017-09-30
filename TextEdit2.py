@@ -45,11 +45,20 @@ class Application(tk.Frame):
     def createWidgets(self):
 
         panes = tk.PanedWindow(self,width=1000,height=800)
-        self.text = tk.Text(panes,width=100)
+        textFrame = tk.Frame(panes,width=700)
         webPane = tk.Message(panes,width=300,bg="#00FFFF",text="Fuck you! >:C")
-        panes.add(self.text)
+        
+
+        panes.add(textFrame)
         panes.add(webPane)
         panes.grid(column=0,row=1)
+        scrollbar = tk.Scrollbar(textFrame)
+        self.text = tk.Text(textFrame,width=100, yscrollcommand=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT,fill=tk.BOTH)
+        self.text.pack(side=tk.RIGHT,fill=tk.BOTH,expand=1)
+
+        scrollbar.config(command=self.text.yview)
+
 
 
         self.menubar = tk.Menu(self)
@@ -71,7 +80,24 @@ class Application(tk.Frame):
         #menubar.add_cascade(label="Change Font", menu=fontbar)
         #app.config(menu=menubar)
 
+        
+        editmenu = tk.Menu(self.menubar)
+        editmenu.add_command(label="Undo", command=self.openFile)
+        editmenu.add_separator()
+        editmenu.add_command(label="Cut", command=self.openFile)
+        editmenu.add_command(label="Copy", command=self.saveFile)
+        editmenu.add_command(label="Paste", command=self.saveAs)
+        editmenu.add_command(label="Delete", command=self.quit)
+        editmenu.add_separator()
+        editmenu.add_command(label="Copy", command=self.saveFile)
+        editmenu.add_command(label="Copy", command=self.saveFile)
+        editmenu.add_command(label="Paste", command=self.saveAs)
+        editmenu.add_separator()
+        editmenu.add_command(label="Select All", command=self.openFile)
+        editmenu.add_command(label="Time & Date", command = self.openFile)
+        self.menubar.add_cascade(label="Edit", menu=editmenu)
 
+        
 app = Application()
 app.master.title('Sample application')
 app.master.minsize(width=1000,height=800)
