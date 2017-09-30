@@ -3,7 +3,8 @@ from tkinter import filedialog
 from tkinter.filedialog import asksaveasfile
 from tkinter.filedialog import askopenfile
 import tkFontChooser
-
+import urllib.request
+import urllib.parse
 class Application(tk.Frame):
     filename = None
     root = None
@@ -41,6 +42,60 @@ class Application(tk.Frame):
         self.text.delete(0.0, tk.END) 
         self.text.insert(0.0, t) 
         file.close() 
+
+
+
+    def rightClick(self,e):
+        try:
+            def rightClick_Copy(e, apnd=0):
+                e.widget.event_generate('<Control-c>')
+            def rightClick_Cut(e):
+                e.widget.event_generate('<Control-x>')
+            def rightClick_Paste(e):
+                e.widget.event_generate('<Control-v>')
+            def rightClick_Youtube(e):
+                query_string = urllib.parse.urlencode({"search_query" : (e)})
+                html_content = urllib.request.urlopen("http://www.youtube.com/results?" + query_string)
+                search_results = re.findall(r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
+                e= "http://www.youtube.com/watch?v=" + search_results[0]
+                winston.withdraw()
+                winston.clipboard_append(e)
+                winston.update()
+                
+                
+            e.widget.focus()
+            
+            nclst=[
+                   (' Cut', lambda e=e: rightClick_Cut(e)),
+                   (' Copy', lambda e=e: rightClick_Copy(e)),
+                   (' Paste', lambda e=e: rightClick_Paste(e)),
+                   (' Youtube', lambda e=e: rightClick_Youtube(e))
+                   ]
+            rmenu = tk.Menu(None, tearoff=0, takefocus=0)
+
+            for (txt, cmd) in nclst:
+                rmenu.add_command(label=txt, command=cmd)
+
+            rmenu.tk_popup(e.x_root+40, e.y_root+10,entry="0")
+        except TclError:
+            print (' - rClick menu, something wrong')
+            pass
+
+        return "break"
+
+    def rClickbinder(r):
+        try:
+            for b in [ 'Text', 'Entry', 'Listbox', 'Label']: #
+                r.bind_class(b, sequence='<Button-3>',
+                             func=rClicker, add='')
+        except TclError:
+            print (' - rClickbinder, something wrong')
+            pass
+          
+
+
+
+
 
     def createWidgets(self):
 
@@ -102,6 +157,11 @@ app = Application()
 app.master.title('Sample application')
 app.master.minsize(width=1000,height=800)
 app.master.maxsize(width=1000,height=800)
+
+
+
+if __name__ == '__main__':
+    app.master.bind('<Button-3>',app.rightClick)
 
 app.master.config(menu=app.menubar)
 app.mainloop()
