@@ -2,8 +2,13 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfile
 from tkinter.filedialog import askopenfile
+import urllib.request
+import urllib.parse
+import re
+
 
 filename = None
+winston = Tk()
 
 def newFile():
     global filename
@@ -25,11 +30,7 @@ def saveAs():
     except:
         showerror(title="Oh No!", message="Unable to save file...")
 
-def undo():
-    	if not stack:
-    		return
-    	previous = stack.pop()
-    	previous.undo()
+
 def openFile():
     global filename
     file = askopenfile(parent=root,title='Select a File')
@@ -47,12 +48,23 @@ def rightClick(e):
             e.widget.event_generate('<Control-x>')
         def rightClick_Paste(e):
             e.widget.event_generate('<Control-v>')
+        def rightClick_Youtube(e):
+            query_string = urllib.parse.urlencode({"search_query" : (e)})
+            html_content = urllib.request.urlopen("http://www.youtube.com/results?" + query_string)
+            search_results = re.findall(r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
+            e= "http://www.youtube.com/watch?v=" + search_results[0]
+            winston.withdraw()
+            winston.clipboard_append(e)
+            winston.update()
+            
+            
         e.widget.focus()
         
         nclst=[
                (' Cut', lambda e=e: rightClick_Cut(e)),
                (' Copy', lambda e=e: rightClick_Copy(e)),
                (' Paste', lambda e=e: rightClick_Paste(e)),
+               (' Youtube', lambda e=e: rightClick_Youtube(e))
                ]
         rmenu = Menu(None, tearoff=0, takefocus=0)
 
@@ -75,8 +87,10 @@ def rClickbinder(r):
         print (' - rClickbinder, something wrong')
         pass
       
-root = Tk()
+
  #scrollbar
+ 
+root = Tk()
 scrollbar = Scrollbar(root)
 scrollbar.pack(side=RIGHT, fill=BOTH)
 
@@ -84,6 +98,12 @@ scrollbar.pack(side=RIGHT, fill=BOTH)
 root.title("MonkeyCode Editor")
 root.minsize(width=400, height=400)
 root.maxsize(width=400, height=400)
+
+
+import urllib.request
+import urllib.parse
+import re
+
 
 
 
