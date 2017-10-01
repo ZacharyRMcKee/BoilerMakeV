@@ -5,28 +5,66 @@ from tkinter.filedialog import askopenfile
 import tkFontChooser
 import urllib.request
 import urllib.parse
-
+from titlecase import titlecase
 import wikipedia
 
 class WikiModule(tk.Frame):
     title = None
     root = None
-    body = None
+    summary = None
     url = None
+    popup = None
     def __init__(self,master):
+        self.title = tk.StringVar()
+        self.title.set("Wikipedia")
+        self.summary = tk.StringVar()
+        self.summary.set(wikipedia.summary("Wikipedia",sentences=4))
+        
         root = tk.Frame.__init__(self,master,height=267,width=300,bg="#0000ff")
-        header = tk.Label(self,width=43,bg="#00ff00",text="Robert Taylor Homes")
+        header = tk.Label(self,width=43,bg="#00ff00",textvariable=self.title)
 
-        body = tk.Message(self,width=300,bg="#ff0000",text=wikipedia.summary("Robert Taylor Homes",sentences=4))
+        body = tk.Message(self,width=300,bg="#ff0000",textvariable=self.summary)
         header.grid(column=0,row=0)
         body.grid(column=0,row=1)
     def updateModule(self,article):
         # do stuff
+        print(article)
+        self.title.set(titlecase(article))
+        try:
+            self.summary.set(wikipedia.summary(article,sentences=4))
+        except wikipedia.exceptions.DisambiguationError as e:
+            for i in e.options:
+                print(i)
+            print("Done")
+            print(len(e.options))
+            self.disambiguation(e.options)
+
+
+
+
+
+
         return
+    def select(self,e):
+        w = e.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        self.updateModule(value)
+        self.popup.destroy()
+    def disambiguation(self,options):
+        self.popup =  tk.Tk()
 
+        scrollBar = tk.Scrollbar(self.popup)
+        scrollBar.pack(side=tk.RIGHT,fill=tk.BOTH)
 
-
-
+        listbox = tk.Listbox(self.popup,yscrollcommand=scrollBar.set)
+        listbox.pack(side=tk.RIGHT,fill=tk.BOTH,expand=1)
+        for i in options:
+            listbox.insert(tk.END,i)
+        self.popup.minsize(width=300,height=400)
+        self.popup.maxsize(width=300,height=400)
+        self.popup.title("Disambiguation")
+        listbox.bind('<<ListboxSelect>>',self.select)
 
 class Application(tk.Frame):
     filename = None
@@ -77,23 +115,15 @@ class Application(tk.Frame):
                 e.widget.event_generate('<Control-x>')
             def rightClick_Paste(e):
                 e.widget.event_generate('<Control-v>')
-            def rightClick_Youtube(e):
-                query_string = urllib.parse.urlencode({"search_query" : (e)})
-                html_content = urllib.request.urlopen("http://www.youtube.com/results?" + query_string)
-                search_results = re.findall(r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
-                e= "http://www.youtube.com/watch?v=" + search_results[0]
-                winston.withdraw()
-                winston.clipboard_append(e)
-                winston.update()
-                
-                
+            def rightClick_Wikipedia(e):
+                self.wiki.updateModule(self.text.selection_get())
             e.widget.focus()
             
             nclst=[
                    (' Cut', lambda e=e: rightClick_Cut(e)),
                    (' Copy', lambda e=e: rightClick_Copy(e)),
                    (' Paste', lambda e=e: rightClick_Paste(e)),
-                   (' Youtube', lambda e=e: rightClick_Youtube(e))
+                   (' Wikipedia', lambda e=e: rightClick_Wikipedia(e))
                    ]
             rmenu = tk.Menu(None, tearoff=0, takefocus=0)
 
@@ -124,8 +154,8 @@ class Application(tk.Frame):
         #summary = wikipedia.summary("section 8 housing",sentences=5)
         webPane = tk.Frame(panes,bg="#333333")
         #webPane = tk.Message(panes,width=300,bg="#00FFFF",text=summary)
-        wiki = WikiModule(webPane)
-        wiki.grid()
+        self.wiki = WikiModule(webPane)
+        self.wiki.grid()
         panes.add(textFrame)
         panes.add(webPane,minsize=300)
         panes.grid(column=0,row=0)
@@ -134,7 +164,7 @@ class Application(tk.Frame):
         scrollbar.pack(side=tk.RIGHT,fill=tk.BOTH)
         self.text.pack(side=tk.RIGHT,fill=tk.BOTH,expand=1)
 
-        wiki.grid_propagate(0)
+        self.wiki.grid_propagate(0)
         scrollbar.config(command=self.text.yview)
 
 
