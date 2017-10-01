@@ -65,6 +65,28 @@ class WikiModule(tk.Frame):
         self.popup.maxsize(width=300,height=400)
         self.popup.title("Disambiguation")
         listbox.bind('<<ListboxSelect>>',self.select)
+        
+    class StackModule(tk.Frame):
+        title = None
+        root = None
+        body = None
+        url = None
+        def __init__(self,master):
+            query = "Discrete Math"
+            root = tk.Frame.__init__(self,master,height=100,width=300,bg="#0000ff")
+            header = tk.Label(self,width=43,bg="#00ff00",text=query)
+            
+            site = Site(StackOverflow,'qB5xmT87jDlGGf*OjXrawQ((')
+            site.be_inclusive()
+            questionList = site.similar(query)
+            question = questionList[0]
+            questionID = question.question_id
+            question = site.question(questionID)
+            answer = question.url
+            body = tk.Message(self,width=300,bg="#ff0000",text=str(question)+'\n'+str(answer))
+            
+            header.grid(column=0,row=0)
+            body.grid(column=0,row=1)
 
 class Application(tk.Frame):
     filename = None
@@ -156,6 +178,8 @@ class Application(tk.Frame):
         #webPane = tk.Message(panes,width=300,bg="#00FFFF",text=summary)
         self.wiki = WikiModule(webPane)
         self.wiki.grid()
+        self.stk = StackModule(webPane)
+        self.stk.grid()
         panes.add(textFrame)
         panes.add(webPane,minsize=300)
         panes.grid(column=0,row=0)
@@ -165,6 +189,7 @@ class Application(tk.Frame):
         self.text.pack(side=tk.RIGHT,fill=tk.BOTH,expand=1)
 
         self.wiki.grid_propagate(0)
+        self.stk.grid_propagate(1)
         scrollbar.config(command=self.text.yview)
 
 
