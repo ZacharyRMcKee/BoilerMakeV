@@ -5,11 +5,35 @@ from tkinter.filedialog import askopenfile
 import tkFontChooser
 import urllib.request
 import urllib.parse
+
+import wikipedia
+
+class WikiModule(tk.Frame):
+    title = None
+    root = None
+    body = None
+    url = None
+    def __init__(self,master):
+        root = tk.Frame.__init__(self,master,height=267,width=300,bg="#0000ff")
+        header = tk.Label(self,width=43,bg="#00ff00",text="Robert Taylor Homes")
+
+        body = tk.Message(self,width=300,bg="#ff0000",text=wikipedia.summary("Robert Taylor Homes",sentences=4))
+        header.grid(column=0,row=0)
+        body.grid(column=0,row=1)
+    def updateModule(self,article):
+        # do stuff
+        return
+
+
+
+
+
 class Application(tk.Frame):
     filename = None
     root = None
-    menubar = None
+    menuIbar = None
     text = None
+    wiki = None
     def __init__(self, master=None):
         global root
         root = tk.Frame.__init__(self,master)
@@ -92,28 +116,26 @@ class Application(tk.Frame):
             print (' - rClickbinder, something wrong')
             pass
           
-
-
-
-
-
     def createWidgets(self):
 
-        panes = tk.PanedWindow(self,width=1000,height=800)
-        textFrame = tk.Frame(panes,width=700)
-        webPane = tk.Message(panes,width=300,bg="#00FFFF",text="Fuck you! >:C")
+        panes = tk.PanedWindow(self,width=1000,height=900)
+        textFrame = tk.Frame(panes,width=600)
         
-
+        #summary = wikipedia.summary("section 8 housing",sentences=5)
+        webPane = tk.Frame(panes,bg="#333333")
+        #webPane = tk.Message(panes,width=300,bg="#00FFFF",text=summary)
+        wiki = WikiModule(webPane)
+        wiki.grid()
         panes.add(textFrame)
-        panes.add(webPane)
-        panes.grid(column=0,row=1)
+        panes.add(webPane,minsize=300)
+        panes.grid(column=0,row=0)
         scrollbar = tk.Scrollbar(textFrame)
         self.text = tk.Text(textFrame,width=100, yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT,fill=tk.BOTH)
         self.text.pack(side=tk.RIGHT,fill=tk.BOTH,expand=1)
 
+        wiki.grid_propagate(0)
         scrollbar.config(command=self.text.yview)
-
 
 
         self.menubar = tk.Menu(self)
@@ -154,9 +176,9 @@ class Application(tk.Frame):
 
         
 app = Application()
-app.master.title('Sample application')
-app.master.minsize(width=1000,height=800)
-app.master.maxsize(width=1000,height=800)
+app.master.title('NoteMaker')
+app.master.minsize(width=1000,height=801)
+app.master.maxsize(width=1000,height=801)
 
 
 
